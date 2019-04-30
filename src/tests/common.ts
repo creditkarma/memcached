@@ -17,10 +17,10 @@ const testMemcachedHost = process.env.MEMCACHED__HOST || 'localhost'
 export const servers = {
     single: testMemcachedHost + ':11211',
     multi: [
-      testMemcachedHost + ':11211',
-      testMemcachedHost + ':11212',
-      testMemcachedHost + ':11213',
-  ],
+        testMemcachedHost + ':11211',
+        testMemcachedHost + ':11212',
+        testMemcachedHost + ':11213',
+    ],
 }
 
 /**
@@ -53,4 +53,12 @@ export function numbers(n: number) {
     }
 
     return result
+}
+
+export function wait(delay: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve()
+        }, delay)
+    })
 }

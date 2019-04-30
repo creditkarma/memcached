@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2017",
         "module": "commonjs",
         "moduleResolution": "node",
         "sourceMap": true,
@@ -9,10 +9,8 @@
         "outDir": "./dist",
         "noEmitOnError": true,
         "strict": true,
-        "strictFunctionTypes": false,
-        "noUnusedLocals": false,
-        "pretty": true,
-        "removeComments": true
+        "noUnusedLocals": true,
+        "pretty": true
     },
     "exclude": [
         "node_modules",

@@ -1,10 +1,14 @@
 import { createHash } from 'crypto'
+import { EventEmitter } from 'events'
 import { IMemcachedCommand, ValidationItem } from './commands'
 import { IMemcachedConfig } from './types'
 
 const toString = Object.prototype.toString
 
-export function validateArg(args: IMemcachedCommand, config: IMemcachedConfig) {
+export function validateArg(
+    args: IMemcachedCommand,
+    config: IMemcachedConfig,
+): string | undefined {
     let err: any
 
     args.validate.forEach((tokens: ValidationItem) => {
@@ -29,7 +33,6 @@ export function validateArg(args: IMemcachedCommand, config: IMemcachedConfig) {
             case Array:
                 if (toString.call(value) !== '[object Array]') {
                     err = `Argument "${key}" is not a valid Array.`
-
                 } else if (!err && key === 'key') {
                     for (let vKey = 0; vKey < value.length; vKey++) {
                         const vValue = value[vKey]
@@ -37,10 +40,14 @@ export function validateArg(args: IMemcachedCommand, config: IMemcachedConfig) {
                         if (result.err) {
                             err = result.err
                         } else {
-                            args.command = args.command.replace(vValue, result.value)
+                            args.command = args.command.replace(
+                                vValue,
+                                result.value,
+                            )
                         }
                     }
                 }
+
                 break
 
             case Object:
@@ -60,7 +67,6 @@ export function validateArg(args: IMemcachedCommand, config: IMemcachedConfig) {
             case String:
                 if (toString.call(value) !== '[object String]') {
                     err = `Argument "${key}" is not a valid String.`
-
                 } else if (!err && key === 'key') {
                     const result = validateKeySize(config, key, value)
                     if (result.err) {
@@ -73,49 +79,53 @@ export function validateArg(args: IMemcachedCommand, config: IMemcachedConfig) {
                 break
 
             default:
-                if (toString.call(value) === '[object global]' && !tokens[2]) {
+                if (toString.call(value) === '[object global]') {
                     err = `Argument "${key}" is not defined.`
                 }
         }
     })
 
-    if (err) {
-        if (args.callback) {
-            args.callback(new Error(err), undefined)
-        }
-
-        return false
-    }
-
-    return true
+    return err
 }
 
-function validateKeySize(config: IMemcachedConfig, key: string | number, value: any) {
+function validateKeySize(
+    config: IMemcachedConfig,
+    key: string | number,
+    value: any,
+) {
     if (value.length > config.maxKeySize) {
         if (config.keyCompression) {
-            return { err: false, value: createHash('md5').update(value).digest('hex') }
-
+            return {
+                err: false,
+                value: createHash('md5')
+                    .update(value)
+                    .digest('hex'),
+            }
         } else {
-            return { err: `Argument "${key}" is longer than the maximum allowed length of ${config.maxKeySize}` }
+            return {
+                err: `Argument "${key}" is longer than the maximum allowed length of ${
+                    config.maxKeySize
+                }`,
+            }
         }
-
     } else if (/[\s\n\r]/.test(value)) {
         return { err: 'The key should not contain any whitespace or new lines' }
-
     } else {
         return { err: false, value }
     }
 }
 
-export type EventHandler =
-    (evt: any) => void
+export type EventHandler = (evt: any) => void
 
 export interface IEventHandlerMap {
     [name: string]: EventHandler
 }
 
 // a small util to use an object for eventEmitter
-export function fuse(target: any, handlers: IEventHandlerMap) {
+export function fuse<T extends EventEmitter>(
+    target: T,
+    handlers: IEventHandlerMap,
+) {
     for (const i in handlers) {
         if (handlers.hasOwnProperty(i)) {
             target.on(i, handlers[i])
@@ -124,8 +134,15 @@ export function fuse(target: any, handlers: IEventHandlerMap) {
 }
 
 // merges a object's proppertys / values with a other object
-export function merge<A extends object, B extends object>(obj1: A, obj2: B): A & B
-export function merge<A extends object, B extends object, C extends object>(obj1: A, obj2: B, obj3: C): A & B & C
+export function merge<A extends object, B extends object>(
+    obj1: A,
+    obj2: B,
+): A & B
+export function merge<A extends object, B extends object, C extends object>(
+    obj1: A,
+    obj2: B,
+    obj3: C,
+): A & B & C
 export function merge(...objs: Array<any>): any {
     const target: any = {}
 

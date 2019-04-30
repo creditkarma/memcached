@@ -11,11 +11,12 @@ declare module 'jackpot' {
     import { EventEmitter } from 'events'
     import * as net from 'net'
 
-    type ConnectionFactory<T> =
-        () => T
+    type ConnectionFactory<T> = () => T
 
-    type ConnectionCallback =
-        (err?: Error, connection?: net.Socket) => void
+    type ConnectionCallback<Connection> = (
+        err?: Error,
+        connection?: Connection,
+    ) => void
 
     class Manager<Connection> extends EventEmitter {
         public retries: number
@@ -27,7 +28,7 @@ declare module 'jackpot' {
         public connectionIssue(issue: string, socket: Connection): void
         public factory(fn: ConnectionFactory<Connection>): void
         public remove(socket: Connection): void
-        public pull(fn: ConnectionCallback): this
+        public pull(fn: ConnectionCallback<Connection>): this
         public end(hard?: boolean): void
     }
 

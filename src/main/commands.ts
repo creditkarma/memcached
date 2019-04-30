@@ -1,29 +1,41 @@
-import {
-    CallbackFunction,
-    Key,
-    MemcachedOptions,
-} from './types'
+import { CallbackFunction, Key } from './types'
 
 import * as Utils from './utils'
 
 export type NativeConstructor =
-    StringConstructor | NumberConstructor | FunctionConstructor |
-    ArrayConstructor | BooleanConstructor | ObjectConstructor
+    | StringConstructor
+    | NumberConstructor
+    | FunctionConstructor
+    | ArrayConstructor
+    | BooleanConstructor
+    | ObjectConstructor
 
-export type ValidationItem =
-    [ string, NativeConstructor ]
+export type ValidationItem = [string, NativeConstructor]
 
-export type ValidationItems =
-    Array<ValidationItem>
+export type ValidationItems = Array<ValidationItem>
 
 export type CommandType =
-    'touch' | 'get' | 'gets' | 'delete' | 'stats cachedump' |
-    'set' | 'replace' | 'add' | 'cas' | 'append' | 'prepend' |
-    'incr' | 'decr' | 'version' | 'flush_all' | 'stats' |
-    'stats settings' | 'stats slabs' | 'stats items'
+    | 'touch'
+    | 'get'
+    | 'gets'
+    | 'delete'
+    | 'stats cachedump'
+    | 'set'
+    | 'replace'
+    | 'add'
+    | 'cas'
+    | 'append'
+    | 'prepend'
+    | 'incr'
+    | 'decr'
+    | 'version'
+    | 'flush_all'
+    | 'stats'
+    | 'stats settings'
+    | 'stats slabs'
+    | 'stats items'
 
-export type CommandCompiler =
-    (noreply?: boolean) => CommandOptions
+export type CommandCompiler = (noreply?: boolean) => CommandOptions
 
 export interface IMemcachedCommand {
     key: Key
@@ -43,7 +55,9 @@ export interface IMemcachedCommand {
 export const DEFAULT_COMMAND: IMemcachedCommand = {
     key: '',
     value: null,
-    callback: (err: Error, data: any): void => {},
+    callback: (err: any, data: any): void => {
+        // Yeah, this is No-op
+    },
     lifetime: 0,
     validate: [],
     type: 'touch',
@@ -55,8 +69,7 @@ export const DEFAULT_COMMAND: IMemcachedCommand = {
     execution: 0,
 }
 
-export type CommandOptions =
-    Partial<IMemcachedCommand>
+export type CommandOptions = Partial<IMemcachedCommand>
 
 export function makeCommand(options: CommandOptions): IMemcachedCommand {
     return Utils.merge(DEFAULT_COMMAND, options)

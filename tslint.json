@@ -1,5 +1,9 @@
 {
-    "extends": "tslint:recommended",
+    "extends": [
+        "tslint:recommended",
+        "tslint-config-prettier",
+        "tslint-plugin-prettier"
+    ],
     "rules": {
         "no-bitwise": false,
         "no-empty": false,

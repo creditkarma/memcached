@@ -23,23 +23,16 @@
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "clean-all": "rimraf dist node_modules package-lock.json",
+    "clean:all": "npm run clean -- node_modules package-lock.json",
+    "format": "prettier --write 'src/**/*.ts'",
     "lint": "tslint --fix './src/**/*.ts'",
     "prebuild": "npm run clean",
-    "build": "npm run lint && tsc",
+    "build": "npm run lint && npm run format && tsc",
     "docker": "docker-compose up --force-recreate &",
     "docker:kill": "docker-compose kill",
     "pretest": "npm run docker:kill && npm run docker && npm run build",
     "test": "wait-on --timeout 20000 tcp:11211 tcp:11212 tcp:11213 && mocha --opts mocha.opts",
-    "posttest": "npm run docker:kill",
-    "release:patch": "npm version patch && npm run release:publish",
-    "release:minor": "npm version minor && npm run release:publish",
-    "release:major": "npm version major && npm run release:publish",
-    "release:prepatch": "npm version prepatch && npm run release:publish",
-    "release:preminor": "npm version preminor && npm run release:publish",
-    "release:premajor": "npm version premajor && npm run release:publish",
-    "release:prerelease": "npm version prerelease && npm run release:publish",
-    "release:publish": "git push --follow-tags"
+    "posttest": "npm run docker:kill"
   },
   "license": "MIT",
   "repository": {
@@ -51,14 +44,17 @@
     "jackpot": "^0.0.6"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.6",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^8.0.51",
-    "@types/chai": "^4.1.4",
-    "mocha": "^5.2.0",
-    "chai": "^4.1.2",
+    "@types/node": "^10.14.6",
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "prettier": "^1.17.0",
     "rimraf": "^2.6.2",
-    "tslint": "^5.11.0",
-    "typescript": "2.9.x",
-    "wait-on": "^2.1.0"
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "typescript": "3.4.x",
+    "wait-on": "^3.2.0"
   }
 }

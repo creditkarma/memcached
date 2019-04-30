@@ -4,8 +4,7 @@ import { EventEmitter } from 'events'
 
 import * as Utils from './utils'
 
-type PingCallback =
-    (err: Error | boolean, result: string | boolean) => void
+type PingCallback = (err: Error | boolean, result: string | boolean) => void
 
 function ping(host: string, callback: PingCallback) {
     const isWin = process.platform.indexOf('win') === 0 // win32 or win64
@@ -13,12 +12,26 @@ function ping(host: string, callback: PingCallback) {
     const pong = spawn('ping', [arg, '3', host]) // only ping 3 times
 
     pong.stdout.on('data', (data: Buffer) => {
-        callback(false, data.toString().split('\n')[0].substr(14))
+        callback(
+            false,
+            data
+                .toString()
+                .split('\n')[0]
+                .substr(14),
+        )
         pong.kill()
     })
 
     pong.stderr.on('data', (data: Buffer) => {
-        callback(new Error(data.toString().split('\n')[0].substr(14)), false)
+        callback(
+            new Error(
+                data
+                    .toString()
+                    .split('\n')[0]
+                    .substr(14),
+            ),
+            false,
+        )
         pong.kill()
     })
 }
@@ -27,7 +40,7 @@ export interface IIssueLogOptions {
     failOverServers: Array<string>
     failures: number
     server: string
-    tokens: Array<string>
+    hosts: Array<string>
     reconnect: number
     retry: number
     remove: boolean
@@ -36,7 +49,7 @@ export interface IIssueLogOptions {
 
 export interface IIssueLogDetails {
     server: string
-    tokens: Array<string>
+    hosts: Array<string>
     messages: Array<string>
 }
 
@@ -52,8 +65,7 @@ export interface ISuccessDetails extends IIssueLogDetails {
     totalDownTime: number
 }
 
-export type IssueLogDetails =
-    IFailueDetails | ISuccessDetails
+export type IssueLogDetails = IFailueDetails | ISuccessDetails
 
 export class IssueLog extends EventEmitter {
     public failed: boolean
@@ -92,7 +104,10 @@ export class IssueLog extends EventEmitter {
 
         // All failures must occur within `failuresTimeout` ms from the initial
         // failure in order for node to be disconnected or removed.
-        if (this.config.failures && this.config.failures === JSON.parse(this.args).failures) {
+        if (
+            this.config.failures &&
+            this.config.failures === JSON.parse(this.args).failures
+        ) {
             this.failuresResetId = setTimeout(() => {
                 this.failuresReset()
             }, this.config.failuresTimeout)
@@ -104,7 +119,6 @@ export class IssueLog extends EventEmitter {
                 this.attemptRetry()
             }, this.config.retry)
             this.emit('issue', this.details)
-
         } else {
             if (this.failuresResetId) {
                 clearTimeout(this.failuresResetId)
@@ -112,7 +126,6 @@ export class IssueLog extends EventEmitter {
 
             if (this.config.remove) {
                 this.emit('remove', this.details)
-
             } else if (!this.isScheduledToReconnect) {
                 this.isScheduledToReconnect = true
                 setTimeout(() => {
@@ -130,25 +143,26 @@ export class IssueLog extends EventEmitter {
         if (this.config.failures) {
             return {
                 server: this.config.server,
-                tokens: this.config.tokens,
+                hosts: this.config.hosts,
                 messages: this.messages,
                 failures: this.config.failures,
                 totalFailures: this.totalFailures,
             }
-
         } else {
-            const totalReconnectsFailed = this.totalReconnectsAttempted - this.totalReconnectsSuccess
-            const totalDownTime = (totalReconnectsFailed * this.config.reconnect) + (this.totalFailures * this.config.retry)
+            const totalReconnectsFailed =
+                this.totalReconnectsAttempted - this.totalReconnectsSuccess
+            const totalDownTime =
+                totalReconnectsFailed * this.config.reconnect +
+                this.totalFailures * this.config.retry
             return {
                 server: this.config.server,
-                tokens: this.config.tokens,
+                hosts: this.config.hosts,
                 messages: this.messages,
                 totalReconnectsAttempted: this.totalReconnectsAttempted,
                 totalReconnectsSuccess: this.totalReconnectsSuccess,
                 totalReconnectsFailed,
                 totalDownTime,
             }
-
         }
     }
 
@@ -165,11 +179,14 @@ export class IssueLog extends EventEmitter {
         this.emit('reconnecting', this.details)
 
         // Ping the server
-        ping(this.config.tokens[1], (err: any) => {
+        ping(this.config.hosts[1], (err: any) => {
             // still no access to the server
             if (err) {
                 self.messages.push(err.message || 'No message specified')
-                return setTimeout(self.attemptReconnect.bind(self), self.config.reconnect)
+                return setTimeout(
+                    self.attemptReconnect.bind(self),
+                    self.config.reconnect,
+                )
             }
 
             self.emit('reconnected', self.details)

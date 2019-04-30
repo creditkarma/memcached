@@ -1,5 +1,3 @@
-import Jackpot = require('jackpot')
-
 // List of server hosts as strings
 export type ServerList = Array<string>
 
@@ -10,19 +8,25 @@ export interface IServerPriorityMap {
 
 export type Server = string
 
-export type Servers =
-    ServerList | IServerPriorityMap | Server
+export type Servers = ServerList | IServerPriorityMap | Server
 
 export type Key = string | Array<string>
 
-export type ErrorValue =
-    Error | Array<Error> | undefined | null
+export type ErrorValue = Error | Array<Error> | undefined | null
 
-export type CallbackFunction<T = any> =
-    (err: ErrorValue, result: T) => void
+export type CallbackFunction<T = any> = (err?: ErrorValue, result?: T) => void
 
-export type ParseResult =
-    [ number, any ]
+export const enum ParseCommand {
+    FLUSH,
+    BUFFER,
+    CONTINUE,
+}
+
+export interface IParseResult {
+    type: ParseCommand
+    data: any
+    connectionError?: string
+}
 
 export interface IMemcachedConfig {
     maxKeySize: number
@@ -53,16 +57,13 @@ export interface IMemcachedConfig {
     failOverServers: Array<string>
 }
 
-export type MemcachedOptions =
-    Partial<IMemcachedConfig>
+export type MemcachedOptions = Partial<IMemcachedConfig>
 
 export interface ICasResult {
     cas: string
-    value: any
+    [key: string]: any
 }
 
-export type DecoderFunction<T> =
-    (input: string) => T
+export type DecoderFunction<T> = (input: string) => T
 
-export type EncoderFunction<T> =
-    (input: T) => string
+export type EncoderFunction<T> = (input: T) => string

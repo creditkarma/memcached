@@ -1,26 +1,25 @@
 import { assert } from 'chai'
 import { Memcached } from '../main'
 import * as common from './common'
-
-(global as any).testnumbers = (global as any).testnumbers || +(Math.random() * 1000000).toFixed()
+;(global as any).testnumbers =
+    (global as any).testnumbers || +(Math.random() * 1000000).toFixed()
 
 /**
  * Expresso test suite for all `parser` related
  * memcached commands
  */
 describe('Memcached parser', () => {
-    it('chunked response', (done) => {
+    it('chunked response', async () => {
         const memcached = new Memcached(common.servers.single)
         const message: string = common.alphabet(256)
         const chunks: Array<string> = []
-        const chunk = (key: number, length: number): string => `VALUE tests::#${key} 2 ${length}`
+        const chunk = (key: number, length: number): string =>
+            `VALUE tests::#${key} 2 ${length}`
         const chunkJSON: string = JSON.stringify({
             lines: [],
             message,
             id: null,
         })
-        const testnr = ++(global as any).testnumbers
-        const callbacks = 0
 
         // Build up our tests
         const socket = {
@@ -33,10 +32,10 @@ describe('Memcached parser', () => {
         // Build up our chunk data
         chunks.push(chunk(1, chunkJSON.length))
         chunks.push(chunkJSON)
-        chunks.push(chunk(2, chunkJSON.length));
+        chunks.push(chunk(2, chunkJSON.length))
 
         // Insert first chunk
-        (memcached as any)._buffer(socket, chunks.join('\r\n') + '\r\n')
+        ;(memcached as any)._buffer(socket, chunks.join('\r\n') + '\r\n')
 
         // We check for bufferArray length otherwise it will crash on 'SyntaxError: Unexpected token V'
         assert.equal(socket.bufferArray.length, 3)
@@ -45,10 +44,10 @@ describe('Memcached parser', () => {
         chunks.unshift(chunkJSON)
 
         // Add it for the second chunk also
-        chunks.push(chunkJSON);
+        chunks.push(chunkJSON)
 
         // Insert second chunk
-        (memcached as any)._buffer(socket, chunks.join('\r\n') + '\r\nEND\r\n')
+        ;(memcached as any)._buffer(socket, chunks.join('\r\n') + '\r\nEND\r\n')
 
         // Check if everything is cleared up nicely.
         assert.equal(socket.responseBuffer.length, 0)
@@ -56,6 +55,5 @@ describe('Memcached parser', () => {
         assert.equal(socket.metaData.length, 0)
 
         memcached.end()
-        done()
     })
 })
